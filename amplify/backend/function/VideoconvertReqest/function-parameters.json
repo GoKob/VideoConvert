@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "auth": {
+      "videoconverte74b3904": [
+        "create"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

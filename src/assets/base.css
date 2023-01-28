@@ -1,0 +1,211 @@
+body, body::after, body::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+[data-amplify-authenticator] {
+  margin-top: 25vh;
+}
+
+/*  header */
+header {
+  padding: 0px 24px;
+  background-color: #242c3c;
+  color: #ffffff;
+  display: grid;
+  grid-template-columns: 2fr auto 2fr;
+  align-items: center;
+  height: var(--amplify-space-xxxl);
+}
+
+ul {
+  list-style-type: none;
+}
+
+ul.list {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.contact {
+  background-color: #ec7414;
+  display: inline-block;
+  color: #242c3c;
+  padding: 6px 16px;
+  border-radius: 30px;
+  margin-left: auto;
+}
+
+section {
+  width: 100%;
+  height: calc(100vh - var(--amplify-space-xxxl));
+  overflow: auto;
+}
+
+a {
+  text-decoration: none;
+}
+
+.list > li a {
+	display: block;
+	padding: 8px 16px;
+	color: #ffffff;
+  text-align: center;
+}
+
+/* Home */
+
+.home {
+  margin: 0px auto;
+  width: 80%;
+  height: 100%;
+}
+
+h1 {
+    padding: 20px;
+    margin: 0px;
+}
+
+.home > p {
+  width: 100%;
+}
+
+.home > img {
+  width: 90%;
+  display: block;
+  margin:auto;
+}
+
+/* Geo */
+.map-container {
+  width: 100%;
+  height: calc(100vh - var(--amplify-space-xxxl));
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Chat */
+
+.main-contents {
+  float: left;
+  width: 100%;
+  height: 100%;
+}
+.message_base {
+  overflow: auto;
+  height: calc(100% - var(--amplify-space-xxl));
+  background-color: #7493bc;
+}
+
+.message-input {
+  width: 100%;
+  height: var(--amplify-space-xxl);
+}
+
+.message {
+  width: 40%;
+  margin: 10px 10px 10px auto;
+  padding: 20px;
+  background-color: #7ade40;
+  border-radius: 30px;
+}
+.message_opponent {
+  width: 40%;
+  margin: 10px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 30px;
+  word-wrap: break-word;
+}
+
+.username {
+  text-align: right;
+  margin: -12px 10px 0px 0px;
+  font-size: 14px;
+}
+.username_opponent {
+  text-align: left;
+  margin: -12px 0px 0px 10px;
+  font-size: 14px;
+}
+
+/* AI */
+.check {
+  display: none;
+}
+
+.label{
+  background: #242c3c;
+  color: #ffffff;
+  display: block;
+  width: 100%;
+  height: 40px;
+}
+
+.content{
+  width: 100%;
+  height: 0;
+  display: none;
+}
+
+.check:checked + .label + .content{
+  height: calc(100% - 200px);
+  display: flex;
+}
+
+textarea {
+  resize: none;
+}
+
+.left, .right{
+    width: 50%;
+}
+
+.ioarea{
+    width: 100%;
+    height: 100%;
+    font-size: 24px;
+    padding-top: 15px;
+    padding-left: 30px; 
+}
+
+label {
+  width: 100%;
+  position: relative;
+  padding: 5px 15px;
+  border: solid 1px #ffffff;
+  color: #fff;
+}
+
+label:hover {
+  background-color: #ec7414;
+}
+
+/* img upload */
+.imageUploader {
+  text-align:center;
+  width: 100%;
+}
+
+img {
+  padding:0 !important;
+  border-radius:5px;
+  text-align:center;
+  max-height: calc(100vh - var(--amplify-space-xxl) - 280px);
+  max-width: 100%;
+}
+
+#video-player {
+  min-width: 80vw;
+  max-width: 80vw
+}
+

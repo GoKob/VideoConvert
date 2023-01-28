@@ -1,0 +1,30 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-videoconvert-dev-44018-authRole",
+      "UnauthRoleArn": "arn:aws:iam::012820275753:role/amplify-videoconvert-dev-44018-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::012820275753:role/amplify-videoconvert-dev-44018-authRole",
+      "Region": "ap-northeast-1",
+      "DeploymentBucketName": "amplify-videoconvert-dev-44018-deployment",
+      "UnauthRoleName": "amplify-videoconvert-dev-44018-unauthRole",
+      "StackName": "amplify-videoconvert-dev-44018",
+      "StackId": "arn:aws:cloudformation:ap-northeast-1:012820275753:stack/amplify-videoconvert-dev-44018/b40c2e50-9dfc-11ed-9183-0ee84e24780f",
+      "AmplifyAppId": "dr60qrj9k2b4q",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-videoconvert-dev-44018-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
+    },
+    "categories": {
+      "auth": {
+        "videoconverte74b3904": {}
+      },
+      "function": {
+        "VideoconvertReqest": {
+          "deploymentBucketName": "amplify-videoconvert-dev-44018-deployment",
+          "s3Key": "amplify-builds/VideoconvertReqest-64334f2b426261573064-build.zip"
+        }
+      },
+      "api": {
+        "requestconvert": {}
+      }
+    }
+  }
+}

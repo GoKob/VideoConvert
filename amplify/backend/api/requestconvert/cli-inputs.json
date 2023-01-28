@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "paths": {
+    "/req": {
+      "name": "/req",
+      "lambdaFunction": "VideoconvertReqest",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create"
+        ]
+      }
+    }
+  }
+}
