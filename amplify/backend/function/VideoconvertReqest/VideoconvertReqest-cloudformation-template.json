@@ -77,9 +77,9 @@
             "AUTH_VIDEOCONVERTE74B3904_USERPOOLID": {
               "Ref": "authvideoconverte74b3904UserPoolId"
             },
-            "OriginEndpointID": "VideoConvert-Mst-HLSEndpoint",
-            "DestinationS3Bucket": "gokoba-20221029-harvest-012820275753-ap-northeast-1",
-            "DestinationRoleArn": "arn:aws:iam::012820275753:role/VideoConvert-Mst-MediaPackage-Harvestjob-Role"
+            "OriginEndpointID": "xxxxxxxxx",
+            "DestinationS3Bucket": "xxxxxxxxx",
+            "DestinationRoleArn": "xxxxxxxxx"
           }
         },
         "Role": {

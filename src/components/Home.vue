@@ -72,7 +72,7 @@ export default {
   },
   data(){
     return{
-      url: "https://drllcokaf794g.cloudfront.net/out/v1/d544d824eb784192aa931fe5334aa556/master.m3u8",
+      url: "xxxxxxxxx",
       date: null,
       start: null,
       end: null,
