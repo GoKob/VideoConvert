@@ -8,7 +8,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "VideoconvertReqest"
+          "resourceName": "VideoconvertRequest"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -42,7 +42,7 @@
     }
   },
   "function": {
-    "VideoconvertReqest": {
+    "VideoconvertRequest": {
       "build": true,
       "dependsOn": [
         {
