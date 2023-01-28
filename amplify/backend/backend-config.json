@@ -44,35 +44,8 @@
   "function": {
     "VideoconvertRequest": {
       "build": true,
-      "dependsOn": [
-        {
-          "attributes": [
-            "UserPoolId"
-          ],
-          "category": "auth",
-          "resourceName": "videoconverte74b3904"
-        }
-      ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
-    }
-  },
-  "parameters": {
-    "AMPLIFY_function_VideoconvertReqest_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "VideoconvertReqest"
-        }
-      ]
-    },
-    "AMPLIFY_function_VideoconvertReqest_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "VideoconvertReqest"
-        }
-      ]
     }
   }
 }
