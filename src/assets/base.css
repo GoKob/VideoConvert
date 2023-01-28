@@ -203,9 +203,3 @@ img {
   max-height: calc(100vh - var(--amplify-space-xxl) - 280px);
   max-width: 100%;
 }
-
-#video-player {
-  min-width: 80vw;
-  max-width: 80vw
-}
-
