@@ -3,7 +3,7 @@
   "paths": {
     "/req": {
       "name": "/req",
-      "lambdaFunction": "VideoconvertReqest",
+      "lambdaFunction": "VideoconvertRequest",
       "permissions": {
         "setting": "private",
         "auth": [
