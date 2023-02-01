@@ -73,7 +73,7 @@ export default {
   data(){
     return{
       url: "xxxxxxxxx",
-      date: null,
+      date: "2023-02-01T00:00:00+09:00",
       start: null,
       end: null,
       folder: null
