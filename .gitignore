@@ -49,3 +49,9 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+
+
+scripts/cloudfront_private_key.pem
+scripts/cloudfront_public_key.pem
+scripts/cloudfront_key_config.json
+scripts/cloudfront_key_group_config.json

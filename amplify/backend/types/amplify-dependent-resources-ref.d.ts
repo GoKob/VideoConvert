@@ -18,12 +18,22 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "function": {
-    "VideoconvertReqest": {
+    "GetCredential": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
       "LambdaExecutionRoleArn": "string",
       "Name": "string",
       "Region": "string"
+    },
+    "VideoconvertRequest": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
+    "videoconvertcryptography": {
+      "Arn": "string"
     }
   }
 }

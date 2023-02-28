@@ -16,24 +16,28 @@
               </div>
               
               <div class="input-group mb-3 col-12">
-                <input type="text" v-model="start" class="form-control" placeholder="StartPoint" aria-label="StartPoint" aria-describedby="StartTime" readonly required>
+                <input type="text" v-model="start" class="form-control" placeholder="StartPoint" aria-label="StartPoint" aria-describedby="StartTime" required>
                 <button class="btn btn-primary" type="button" id="start" v-on:click="getCurrentTime">Start</button>
               </div>
               
               <div class="input-group mb-3 col-12">
-                <input type="text" v-model="end" class="form-control" placeholder="EndPoint" aria-label="EndPoint" aria-describedby="EndTime" readonly required>
+                <input type="text" v-model="end" class="form-control" placeholder="EndPoint" aria-label="EndPoint" aria-describedby="EndTime" required>
                 <button class="btn btn-success" type="button" id="end" v-on:click="getCurrentTime">End</button>
+              </div>
+
+              <div class="input-group mb-3 col-12">
+                <input type="text" v-model="date_folder" class="form-control" placeholder="Date folder" aria-label="DateFolder" aria-describedby="DateFolder" required>
               </div>
               
               <div class="input-group mb-3 col-12">
-                <input type="text" v-model="folder" class="form-control" placeholder="upload folder name" aria-label="folder" aria-describedby="folder" required>
+                <input type="text" v-model="artist_folder" class="form-control" placeholder="Artist folder ID" aria-label="ArtistFolder" aria-describedby="ArtistFolder" required>
               </div>
             </div>
           </div>
         </div>
 
         <div class="d-grid mt-4 mb-4">
-          <button v-bind:class="[activateSubmit == true ? 'btn btn-outline-dark': 'btn btn-dark']" v-bind:disabled="activateSubmit" type="button" data-bs-toggle="modal" data-bs-target="#Modal" v-on:click="requestConvert" >Convert</button>
+          <button v-bind:class="[activateSubmit == true ? 'btn btn-outline-dark': 'btn btn-dark']" v-bind:disabled="activateSubmit" type="button" v-on:click="requestConvert" >Convert</button>
         </div>
       </div>
 
@@ -44,9 +48,7 @@
             <h5 class="modal-title" id="exampleModalLabel">Request Convert</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
-            切り出しをリクエストしました。結果は Google Drive で確認してください
-          </div>
+          <div class="modal-body" style="white-space: pre-wrap;" v-text="message" />
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -72,20 +74,27 @@ export default {
   },
   data(){
     return{
-      url: "xxxxxxxxx",
-      date: "2023-02-01T00:00:00+09:00",
+      url: "TEMPLATE_URL",
+      date: null,
       start: null,
       end: null,
-      folder: null
+      date_folder: null,
+      artist_folder: null,
+      message: ""
     }
+  },
+  mounted() {
+    this.date = this.toISOString(new Date(Date.now() + ((new Date().getTimezoneOffset() + (9 * 60)) * 60 * 1000)));
   },
   computed: {
     activateSubmit() {
-      if (this.start == null) {
+      if (this.start == null || this.start == "") {
         return true;
-      } else if (this.end == null ) {
+      } else if (this.end == null  || this.end == "") {
         return true;
-      } else if (this.folder == null || this.folder == "") {
+      } else if (this.date_folder == null || this.date_folder == "") {
+        return true;
+      } else if (this.artist_folder == null || this.artist_folder == "") {
         return true;
       } else {
         return false;
@@ -95,8 +104,18 @@ export default {
   methods: {
     setplayer: function() {
       player.attachHTMLVideoElement(document.getElementById('video-player'));
-      player.load(this.url + "?start=" + this.date);
-      player.play();
+      API.get('requestconvert', '/api/video', {
+        queryStringParameters: {
+          resource_url: this.url
+        }
+      })
+        .then((response) => {
+          player.load(this.url + "master_2.m3u8?start=" + this.date + "&" + response);
+          player.play();
+        })
+        .catch((error) => {
+          console.log(error.response);
+      });
     },
     getCurrentTime: function(e) {
       console.log(player.core.state.position);
@@ -124,11 +143,23 @@ export default {
         body: {
           "start": this.start,
           "end": this.end,
-          "folder": this.folder
+          "date_folder": this.date_folder,
+          "artist_folder": this.artist_folder
         }
       }
-      const createResult = await API.post('requestconvert', '/req', request)
-      console.log(createResult);
+      
+      var Modal = new bootstrap.Modal(document.getElementById('Modal'));
+      API.post('requestconvert', '/api/convert', request)
+        .then((response) => {
+          console.log(response);
+          this.message = "リクエストに成功しました。結果はGoogle Driveで確認してください";
+          Modal.show();
+        })
+        .catch((error) => {
+          console.log(error.response);
+          this.message = "リクエストに失敗しました\n\n理由: [" + error.response.data.Reason[0] + "]";
+          Modal.show();
+        });
     }
     
   }

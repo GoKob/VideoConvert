@@ -1,0 +1,584 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  MediaPackageOutputBucketPrefix:
+    Type: String
+    MaxLength: 20
+    MinLength: 1
+    AllowedPattern: '[a-z][a-z0-9_-]*'
+  MediaConvertOutputBucket: # 任意なので設定しなくてもOK. 設定してもこっちのBucketは作成されないので注意
+    Type: String
+    Description: This bucket does not create.
+    MaxLength: 20
+    MinLength: 0
+  TrustedKeyGroup:
+    Type: String
+Conditions:
+  OutputBucketIsNull: !Equals 
+    - ''
+    - !Ref MediaConvertOutputBucket
+Resources:
+  MediaConnectFlow:
+    Type: 'AWS::MediaConnect::Flow'
+    Properties:
+      Name: !Sub '${AWS::StackName}-MediaConnect'
+      Source:
+        IngestPort: '3000'
+        Name: SRT
+        Protocol: srt-listener
+        WhitelistCidr: 0.0.0.0/0
+  MediaLiveAccessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - medialive.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess'
+      Path: /
+      Policies:
+        - PolicyName: Sample-MediaLiveCustomPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:ListBucket'
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                  - 's3:DeleteObject'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'mediastore:ListContainers'
+                  - 'mediastore:PutObject'
+                  - 'mediastore:GetObject'
+                  - 'mediastore:DeleteObject'
+                  - 'mediastore:DescribeObject'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:DescribeLogGroups'
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - 'mediaconnect:ManagedDescribeFlow'
+                  - 'mediaconnect:ManagedAddOutput'
+                  - 'mediaconnect:ManagedRemoveOutput'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'ec2:describeSubnets'
+                  - 'ec2:describeNetworkInterfaces'
+                  - 'ec2:createNetworkInterface'
+                  - 'ec2:createNetworkInterfacePermission'
+                  - 'ec2:deleteNetworkInterface'
+                  - 'ec2:deleteNetworkInterfacePermission'
+                  - 'ec2:describeSecurityGroups'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'mediapackage:DescribeChannel'
+                Resource: '*'
+      RoleName: !Sub '${AWS::StackName}-MediaLiveAccessRole'
+  MediaLiveInput:
+    Type: 'AWS::MediaLive::Input'
+    Properties:
+      MediaConnectFlows:
+        - FlowArn: !Ref MediaConnectFlow
+      Name: !Sub '${AWS::StackName}-MediaLiveInput'
+      RoleArn: !GetAtt 
+        - MediaLiveAccessRole
+        - Arn
+      Type: MEDIACONNECT
+  MediaLiveChannel:
+    Type: 'AWS::MediaLive::Channel'
+    Properties:
+      Name: !Sub '${AWS::StackName}-MediaLiveChannel'
+      ChannelClass: SINGLE_PIPELINE
+      InputAttachments:
+        - InputId: !Ref MediaLiveInput
+      Destinations:
+        - Id: MediaPackage
+          MediaPackageSettings:
+            - ChannelId: !Sub '${AWS::StackName}-MediaPackage'
+      EncoderSettings:
+        AudioDescriptions:
+          - CodecSettings:
+              AacSettings:
+                InputType: NORMAL
+                Bitrate: 256000
+                CodingMode: CODING_MODE_2_0
+                RawFormat: NONE
+                Spec: MPEG4
+                Profile: LC
+                RateControlMode: CBR
+                SampleRate: 96000
+            AudioTypeControl: FOLLOW_INPUT
+            LanguageCodeControl: FOLLOW_INPUT
+            Name: Audio1
+          - CodecSettings:
+              AacSettings:
+                InputType: NORMAL
+                Bitrate: 256000
+                CodingMode: CODING_MODE_2_0
+                RawFormat: NONE
+                Spec: MPEG4
+                Profile: LC
+                RateControlMode: CBR
+                SampleRate: 96000
+            AudioTypeControl: FOLLOW_INPUT
+            LanguageCodeControl: FOLLOW_INPUT
+            Name: Audio2
+        OutputGroups:
+          - OutputGroupSettings:
+              MediaPackageGroupSettings:
+                Destination:
+                  DestinationRefId: MediaPackage
+            Outputs:
+              - OutputSettings:
+                  MediaPackageOutputSettings: {}
+                OutputName: 1920x1080
+                VideoDescriptionName: 1920x1080
+                AudioDescriptionNames:
+                  - Audio1
+              - OutputSettings:
+                  MediaPackageOutputSettings: {}
+                OutputName: 640x360
+                VideoDescriptionName: 640x360
+                AudioDescriptionNames:
+                  - Audio2
+        TimecodeConfig:
+          Source: SYSTEMCLOCK
+        VideoDescriptions:
+          - CodecSettings:
+              H264Settings:
+                Bitrate: 8000000
+                FramerateControl: SPECIFIED
+                FramerateNumerator: 30
+                FramerateDenominator: 1
+                GopSize: 60
+                GopSizeUnits: FRAMES
+                ScanType: PROGRESSIVE
+                ParControl: SPECIFIED
+                ParNumerator: 1
+                ParDenominator: 1
+                RateControlMode: CBR
+                TimecodeInsertion: PIC_TIMING_SEI
+            Height: 1080
+            Name: 1920x1080
+            Width: 1920
+          - CodecSettings:
+              H264Settings:
+                Bitrate: 800000
+                FramerateControl: SPECIFIED
+                FramerateNumerator: 30
+                FramerateDenominator: 1
+                GopSize: 60
+                GopSizeUnits: FRAMES
+                ScanType: PROGRESSIVE
+                ParControl: SPECIFIED
+                ParNumerator: 1
+                ParDenominator: 1
+                RateControlMode: CBR
+                TimecodeInsertion: DISABLED
+            Height: 360
+            Name: 640x360
+            Width: 640
+      RoleArn: !GetAtt 
+        - MediaLiveAccessRole
+        - Arn
+  MediaPackageChannel:
+    Type: 'AWS::MediaPackage::Channel'
+    Properties:
+      Description: Deploy from CloudFormation
+      Id: !Sub '${AWS::StackName}-MediaPackage'
+  MediaPackageHLSEndpoint:
+    Type: 'AWS::MediaPackage::OriginEndpoint'
+    Properties:
+      ChannelId: !Ref MediaPackageChannel
+      Description: Endpoint HLS packaging
+      HlsPackage:
+        PlaylistWindowSeconds: 30
+        SegmentDurationSeconds: 1
+      Id: !Sub '${AWS::StackName}-HLSEndpoint'
+      ManifestName: master
+      Origination: ALLOW
+      StartoverWindowSeconds: 86400
+      TimeDelaySeconds: 0
+      Authorization:
+        CdnIdentifierSecret: !Ref MediaPackageCDNIdentifier
+        SecretsRoleArn: !GetAtt 
+          - MediaPackageSecretsRole
+          - Arn
+    DependsOn:
+      - MediaPackageCDNIdentifier
+      - MediaPackageSecretsRole
+      - MediaPackageSecretsPolicy
+  CloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        CacheBehaviors:
+          - AllowedMethods:
+              - GET
+              - HEAD
+            CachePolicyId: 08627262-05a9-4f76-9ded-b50ca2e3a84f
+            OriginRequestPolicyId: 59781a5b-3903-41f3-afcb-af62929ccde1
+            PathPattern: '/*.ts'
+            TargetOriginId: !Sub '${AWS::StackName}-originId'
+            ViewerProtocolPolicy: redirect-to-https
+        Comment: !Sub '${AWS::StackName}-Managed by MediaPackage'
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachePolicyId: 08627262-05a9-4f76-9ded-b50ca2e3a84f
+          OriginRequestPolicyId: 59781a5b-3903-41f3-afcb-af62929ccde1
+          TargetOriginId: !Sub '${AWS::StackName}-originId'
+          ViewerProtocolPolicy: redirect-to-https
+          TrustedKeyGroups:
+              - !Ref TrustedKeyGroup
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+          - CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: match-viewer
+              OriginSSLProtocols:
+                - TLSv1
+                - TLSv1.1
+                - TLSv1.2
+            DomainName: !Select 
+              - 1
+              - !Split 
+                - //
+                - !Select 
+                  - 0
+                  - !Split 
+                    - /out
+                    - !GetAtt 
+                      - MediaPackageHLSEndpoint
+                      - Url
+            Id: !Sub '${AWS::StackName}-originId'
+            OriginCustomHeaders:
+              - HeaderName: X-MediaPackage-CDNIdentifier
+                HeaderValue: 5c73c71e-40b0-4516-ae00-24265a8397b7
+  MediaPackageHarvestJobRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: mediapackage.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+      MaxSessionDuration: 3600
+      RoleName: !Sub '${AWS::StackName}-MediaPackage-Harvestjob-Role'
+  MediaPackageSecretsRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: mediapackage.amazonaws.com
+            Action: 'sts:AssumeRole'
+      MaxSessionDuration: 3600
+      RoleName: !Sub '${AWS::StackName}-MediaPackage-Secrets-Role'
+  MediaPackageCDNIdentifier:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: !Sub '${AWS::StackName}-MediaPackage/CDN-Auth-ID'
+      SecretString: '{"MediaPackageCDNIdentifier":"5c73c71e-40b0-4516-ae00-24265a8397b7"}'
+  MediaPackageSecretsPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: VisualEditor0
+            Effect: Allow
+            Action:
+              - 'secretsmanager:ListSecrets'
+              - 'secretsmanager:GetSecretValue'
+              - 'secretsmanager:DescribeSecret'
+              - 'secretsmanager:ListSecretVersionIds'
+            Resource:
+              - !Ref MediaPackageCDNIdentifier
+          - Sid: VisualEditor1
+            Effect: Allow
+            Action:
+              - 'iam:GetRole'
+              - 'iam:PassRole'
+            Resource: !GetAtt 
+              - MediaPackageSecretsRole
+              - Arn
+      Roles:
+        - !Ref MediaPackageSecretsRole
+      PolicyName: !Sub '${AWS::StackName}-MediaPackage-Secrets-Policy'
+  HarvestS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${MediaPackageOutputBucketPrefix}-harvest-${AWS::AccountId}-${AWS::Region}'
+  LambdaMediaConvertCreateJob:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Architectures:
+        - arm64
+      Code:
+        S3Bucket: gokoba-samples
+        S3Key: videoconvert/mediaconvert-createjob.zip
+      Description: Create MediaConvert Job
+      Environment:
+        Variables:
+          mediaconvert_endpoint: !GetAtt MediaConvertEndPoint.EndpointUrl
+          mediaconvert_role: !GetAtt 
+            - MediaConvertJobRole
+            - Arn
+          mediaconvert_template: !Ref MediaConvertJobTemplate
+          output_bucket: !If 
+            - OutputBucketIsNull
+            - !Ref HarvestS3Bucket
+            - !Ref MediaConvertOutputBucket
+          stack_name: !Sub '${AWS::StackName}'
+      FunctionName: !Sub '${AWS::StackName}-Lambda-MediaConvertCreateJob'
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: !GetAtt 
+        - LambdaMediaConvertCreateJobRole
+        - Arn
+      Runtime: python3.9
+      Timeout: 60
+  LambdaMediaConvertCreateJobRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      MaxSessionDuration: 3600
+      RoleName: !Sub '${AWS::StackName}-MediaConvertCreateJob-Role'
+  LambdaMediaConvertCreateJobPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'iam:PassRole'
+            Resource: '*'
+            Condition:
+              StringLike:
+                'iam:PassedToService':
+                  - mediaconvert.amazonaws.com
+          - Effect: Allow
+            Action:
+              - 'mediaconvert:CreateJob'
+              - 'mediaconvert:TagResource'
+            Resource: '*'
+          - Effect: Allow
+            Action: 'logs:CreateLogGroup'
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource:
+              - !Join 
+                - ''
+                - - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/
+                  - !Ref LambdaMediaConvertCreateJob
+                  - ':*'
+      Roles:
+        - !Ref LambdaMediaConvertCreateJobRole
+      PolicyName: !Sub '${AWS::StackName}-MediaConvertCreateJob-Policy'
+  EventBridgeMediaPackageRule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Description: Harvest Job Notification of MediaPackage
+      EventPattern:
+        source:
+          - aws.mediapackage
+        detail-type:
+          - MediaPackage HarvestJob Notification
+        detail:
+          harvest_job:
+            channel_id:
+              - !Ref MediaPackageChannel
+            origin_endpoint_id:
+              - !Ref MediaPackageHLSEndpoint
+      Name: !Sub '${AWS::StackName}-MediaPackage-Rule'
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt 
+            - LambdaMediaConvertCreateJob
+            - Arn
+          Id: !Sub '${AWS::StackName}-MediaConvertCreateJob'
+  MediaConvertJobTemplate:
+    Type: 'AWS::MediaConvert::JobTemplate'
+    Properties:
+      Name: !Sub '${AWS::StackName}-MediaConvertJobTemplate'
+      SettingsJson:
+        TimecodeConfig:
+          Source: EMBEDDED
+        OutputGroups:
+          - Name: File Group
+            Outputs:
+              - ContainerSettings:
+                  Container: MP4
+                  Mp4Settings: {}
+                VideoDescription:
+                  Width: 1920
+                  Height: 1080
+                  TimecodeInsertion: PIC_TIMING_SEI
+                  CodecSettings:
+                    Codec: H_264
+                    H264Settings:
+                      InterlaceMode: PROGRESSIVE
+                      FramerateDenominator: 1001
+                      MaxBitrate: 6000000
+                      Bitrate: 4000000
+                      FramerateControl: SPECIFIED
+                      RateControlMode: VBR
+                      FramerateNumerator: 30000
+                      QualityTuningLevel: MULTI_PASS_HQ
+                      FramerateConversionAlgorithm: DUPLICATE_DROP
+                  DropFrameTimecode: ENABLED
+                AudioDescriptions:
+                  - AudioSourceName: Audio Selector 1
+                    CodecSettings:
+                      Codec: AAC
+                      AacSettings:
+                        Bitrate: 96000
+                        RateControlMode: CBR
+                        CodecProfile: LC
+                        CodingMode: CODING_MODE_2_0
+                        SampleRate: 48000
+                        Specification: MPEG4
+                    LanguageCode: JPN
+                Extension: mp4
+            OutputGroupSettings:
+              Type: "FILE_GROUP_SETTINGS"
+              FileGroupSettings:
+                Destination: "s3://videoconvertbucket/output/"
+        Inputs:
+          - AudioSelectors:
+              Audio Selector 1:
+                DefaultSelection: DEFAULT
+            VideoSelector: {}
+            TimecodeSource: ZEROBASED
+      StatusUpdateInterval: SECONDS_60
+  MediaConvertJobRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: mediaconvert.amazonaws.com
+            Action: 'sts:AssumeRole'
+      MaxSessionDuration: 3600
+      RoleName: !Sub '${AWS::StackName}-MediaConvertJobRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess'
+  LambdaMediaConvertCreateJobPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref LambdaMediaConvertCreateJob
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt 
+        - EventBridgeMediaPackageRule
+        - Arn
+  CustomResourceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}-custom-resource"
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+              - Effect: Allow
+                Action:
+                  - mediaconvert:DescribeEndpoints
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:mediaconvert:${AWS::Region}:${AWS::AccountId}:*"
+  MediaConvertEndPoint:
+    Type: Custom::LoadLambda
+    Properties:
+      ServiceToken: !GetAtt CustomResource.Arn
+      Resource: EndPoint
+  CustomResource:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-custom-resource"
+      Description: Used to deploy resources not supported by CloudFormation
+      Handler: index.handler
+      Role: !GetAtt CustomResourceRole.Arn
+      Code:
+        S3Bucket: gokoba-samples
+        S3Key: videoconvert/custom-resource.zip
+      Runtime: nodejs16.x
+      Timeout: 180
+      Environment:
+        Variables:
+          SOLUTION_IDENTIFIER: "version001"
+
+
+Outputs:
+  OriginEndpointID:
+    Value: !Sub '${AWS::StackName}-HLSEndpoint'
+  
+  DestinationS3Bucket:
+    Value: !Ref HarvestS3Bucket
+
+  DestinationRoleArn:
+    Value: !GetAtt 
+      - MediaPackageHarvestJobRole
+      - Arn
+  
+  CloudFrontUrl:
+    Value: !Join 
+      - ''
+      - - !Sub >-
+          https://
+        - !GetAtt
+          - CloudFrontDistribution
+          - DomainName

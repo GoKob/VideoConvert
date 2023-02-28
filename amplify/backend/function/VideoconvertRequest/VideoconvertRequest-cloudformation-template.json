@@ -51,12 +51,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "VideoconvertReqest",
+            "VideoconvertRequest",
             {
               "Fn::Join": [
                 "",
                 [
-                  "VideoconvertReqest",
+                  "VideoconvertRequest",
                   "-",
                   {
                     "Ref": "env"
@@ -77,9 +77,9 @@
             "AUTH_VIDEOCONVERTE74B3904_USERPOOLID": {
               "Ref": "authvideoconverte74b3904UserPoolId"
             },
-            "OriginEndpointID": "xxxxxxxxx",
-            "DestinationS3Bucket": "xxxxxxxxx",
-            "DestinationRoleArn": "xxxxxxxxx"
+            "OriginEndpointID": "TEMPLATE_OriginEndpointID",
+            "DestinationS3Bucket": "TEMPLATE_DestinationS3Bucket",
+            "DestinationRoleArn": "TEMPLATE_DestinationRoleArn"
           }
         },
         "Role": {

@@ -1,13 +1,23 @@
 {
   "version": 1,
   "paths": {
-    "/req": {
-      "name": "/req",
+    "/api/convert": {
+      "name": "/api/convert",
       "lambdaFunction": "VideoconvertRequest",
       "permissions": {
         "setting": "private",
         "auth": [
           "create"
+        ]
+      }
+    },
+    "/api/video": {
+      "name": "/api/video",
+      "lambdaFunction": "GetCredential",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "read"
         ]
       }
     }

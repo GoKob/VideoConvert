@@ -9,6 +9,14 @@
           ],
           "category": "function",
           "resourceName": "VideoconvertRequest"
+        },
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "GetCredential"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -42,10 +50,79 @@
     }
   },
   "function": {
+    "GetCredential": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "videoconvertcryptography"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "VideoconvertRequest": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    },
+    "videoconvertcryptography": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_GetCredential_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "GetCredential"
+        }
+      ]
+    },
+    "AMPLIFY_function_GetCredential_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "GetCredential"
+        }
+      ]
+    },
+    "AMPLIFY_function_VideoconvertRequest_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "VideoconvertRequest"
+        }
+      ]
+    },
+    "AMPLIFY_function_VideoconvertRequest_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "VideoconvertRequest"
+        }
+      ]
+    },
+    "AMPLIFY_function_videoconvertcryptography_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "videoconvertcryptography"
+        }
+      ]
+    },
+    "AMPLIFY_function_videoconvertcryptography_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "videoconvertcryptography"
+        }
+      ]
     }
   }
 }
